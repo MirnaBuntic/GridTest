@@ -104,7 +104,8 @@ def find_risk_clusters(grid):
 significant_clusters = find_risk_clusters(grid)
 
 
-#Definerar en funktion som tar emot ett riskkluster
+#Hjälpfunktion för sort_clusters
+#Definerar en funktion som tar emot ett riskkluster och retunerar värderna
 def get_sort_key(risk_cluster):
 
     #Första index är klustrets första position
