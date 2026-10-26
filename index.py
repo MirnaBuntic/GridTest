@@ -1,31 +1,19 @@
-#Definerar en funktion som tar emot ett filnamn som parameter
+#Definerar en funktion som läser in txt-filen och konverterar den från sting till integar
 def read_grid_from_file(filename):
-    #Öppnar filen i läsläge och stänger filen automatiskt när blocket avslutas
     with open(filename, "r") as f:
-        #Variabel som läser in hela filens innehåll som en string
+
         content = f.read()
+        rows = content.splitlines() #Delar raderna i varsin string
 
-        #Delar upp stringen vid varje radbrytning -> lista där varje element är en rad (str)
-        rows = content.splitlines()
-        #print(rows)
-
-        #Skapar en tom lista som ska innehålla våran grid
         row_list = []
 
-        #Går igenom varje rad i filen
         for r in rows:
-            #Delar upp raden i separata strings för varje tal
-            numbers = r.split()
-
-            #Skapar en tom lista för den aktuella raden 
+            numbers = r.split() #Delar talen i varsin string
             new_rows = []
 
-            #Går igenom varje tal i raden 
             for n in numbers:
-                #Konverterar varje string till ett heltal och lägger till det i den aktuella raden
                 new_rows.append(int(n))
 
-            #När alla tal i raden är konverterade så lägger vi till den i listan för våran grid
             row_list.append(new_rows)
         
         return row_list
@@ -33,15 +21,11 @@ def read_grid_from_file(filename):
 #Anropar funktionen med filnamnet och sparar resultatet i variabeln grid
 grid = read_grid_from_file("riskgrid.txt")
 
-#For loop för bättre översikt i terminalen
-#for row in grid:
- #   print(row)
 
-#Hjälpfunktion för find_risk_clusters för att slippa checka medelvärde på varje riktning fyra gånger
+#Hjälpfunktion för find_risk_clusters för att slippa checka medelvärde på varje riktning
 #Definerar en funktion som tar emot de fyra riskvärderna, positionera för de fyra värderna, riktningen som klustret hittades i och listan där signifikanta kluster ska sparas
 def add_if_significant(values, indices, direction, cluster_list):
 
-    #Beräknar klustrets medelvärde
     average_value = sum(values) / len(values)
 
     #Om medelvärdet är större eller lika med 70 sparas dess värden i en dictionary
@@ -52,25 +36,28 @@ def add_if_significant(values, indices, direction, cluster_list):
             "direction": direction,
             "average": average_value
         }
+
         #Lägger till dicten i listan med signifikanta kluster
-        #Behöver inte retunera listan eftersom den skickas in som ett argument
         cluster_list.append(cluster_info)
   
 
+#Definerar en funktion som checkar om det går att bilda kluster med 4 ammanhängande celler i olika riktningar
 def find_risk_clusters(grid):
+
     cluster_list = []
 
     for row in range(len(grid)):
         for col in range(len(grid[row])):
 
+            #Variabler för vilka riktiningar från startposition som går utan att hamna utanför gridets gränser
             can_move_right = col + 3 < len(grid[row])
             can_move_down = row + 3 < len(grid)
             can_move_up = row - 3 >= 0
 
             #Horisontellt åt höger
             if can_move_right:
-                right_cluster = []
-                right_indices = []
+                right_cluster = [] #Riskvärden
+                right_indices = [] #Positioner till riskvärden
 
                 for i in range(4):
                     right_cluster.append(grid[row][col + i])
@@ -113,23 +100,35 @@ def find_risk_clusters(grid):
 
     return cluster_list
 
+#Anropar funktionen och sparar alla signifikanta kluster
 significant_clusters = find_risk_clusters(grid)
 
 
-#print(len(significant_clusters))
-
-
+#Definerar en funktion som tar emot ett riskkluster
 def get_sort_key(risk_cluster):
-    row = risk_cluster["indices"][0][0]
+
+    #Första index är klustrets första position
+    #Andra index är radens/kolomnens första position
+    row = risk_cluster["indices"][0][0] 
     col = risk_cluster["indices"][0][1]
 
     return (risk_cluster["average"], max(risk_cluster["values"]), -row, -col)
 
+
+#Definerar en funktion som tar emot listan med signifikanta kluster och sorterar den efter reglerna
 def sort_clusters(significant_clusters):
     return sorted(significant_clusters, key=get_sort_key, reverse=True)
 
+
+#Anropar sorteringsfunktionen och sparar den nya listan 
 sorted_clusters = sort_clusters(significant_clusters)
 
 
-for cluster in sorted_clusters:
-    print(cluster)
+#Definerar en funktion som skriver ut alla signifikanta kluster på varsin rad
+def print_significant_clusters(clusters):
+    for cluster in clusters:
+        print(cluster)
+
+
+#Anropar funktionen som skriver ut resultatet i terminalen
+print_significant_clusters(sorted_clusters)
